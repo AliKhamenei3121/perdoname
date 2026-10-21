@@ -1,11 +1,10 @@
-
-Index · HTML
+dex · HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Una pregunta para ti </title>
+<title>Una pregunta para ti pe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,600&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
@@ -59,22 +58,22 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <section class="screen on" id="ask">
   <div class="big">🥺</div>
   <h1>¿Me perdonas por responder así?</h1>
-  <p class="sub">Fui un tonto. Dime que sí, porfa.</p>
+  <p class="sub">Fui bien animal xd . Dime que sí, porfa.</p>
   <div class="row" id="row">
-    <button class="yes" id="yes">Sí </button>
+    <button class="yes" id="yes">Sí 😊</button>
     <button class="no" id="no">No</button>
   </div>
 </section>
  
 <!-- PANTALLA 2: juego -->
 <section class="screen" id="game">
-  <div class="hud"><span id="score">💗 0</span><span id="time">⏱ 40</span><span id="lives"></span></div>
+  <div class="hud"><span id="score">💗 0</span><span id="time">⏱ 40</span><span id="lives">❤️❤️❤️</span></div>
   <div class="stage">
     <canvas id="cv"></canvas>
     <div class="overlay" id="ov">
-      <div class="big">💞</div>
-      <h2>Gracias por perdonarme</h2>
-      <p>Para celebrar: atrapa todos los corazones que puedas. Esquiva los corazones rotos 💔</p>
+      <div class="big">🎉</div>
+      <h2>¡Gracias por perdonarme!</h2>
+      <p>Para celebrar, atrapa todos los corazones que puedas. Esquiva los rotos 💔</p>
       <button class="yes" id="start">Jugar</button>
     </div>
   </div>
@@ -83,7 +82,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <script>
 /* ============ BOTÓN NO QUE ESCAPA ============ */
 const no = document.getElementById('no');
-const frases = ['No','¿Segura?','Piénsalo','Porfa 🥺','Ay no','Casi me atrapas','Dale al Sí 💗'];
+const frases = ['No','¿Segura?','Piénsalo','Porfa 🥺','Ay no','Casi me atrapas','Dale al Sí 😊'];
 let intentos = 0;
 function huir(e){
   if(e){ e.preventDefault(); }
@@ -199,8 +198,11 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
  
-
-            
+function fin(){
+  running = false;
+  const msg = score >= 30 ? 'XD 🏆'
+            : score >= 15 ? 'Nada mal. Gracias por aguantarme, de verdad 😄'
+            : 'Aunque no aunque no atrapes ninguno,espero me perdones  🤝';
   ov.innerHTML = `<div class="big">🏆</div><h2>${score} corazones</h2><p>${msg}</p><button class="yes" id="again">Jugar otra vez</button>`;
   ov.classList.remove('off');
   document.getElementById('again').onclick = begin;
@@ -224,4 +226,3 @@ addEventListener('keydown', e => {
 </script>
 </body>
 </html>
- 
