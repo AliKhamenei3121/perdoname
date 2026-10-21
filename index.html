@@ -1,0 +1,227 @@
+
+Index · HTML
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Una pregunta para ti </title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,600&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#260d2b; --plum:#4a1942; --rose:#ff5d8f; --blush:#ffc2d1;
+  --cream:#fff1e6; --gold:#ffcf70; --ink:#260d2b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Nunito',system-ui,sans-serif;color:var(--cream);
+  background:
+    radial-gradient(60vmax 60vmax at 15% 10%, #7a2457 0%, transparent 60%),
+    radial-gradient(50vmax 50vmax at 90% 95%, #ff5d8f33 0%, transparent 60%),
+    var(--wine);
+  overflow:hidden;touch-action:manipulation;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.screen.on{display:flex}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(2rem,7vw,3.4rem);line-height:1.15;max-width:15ch;text-wrap:balance}
+p.sub{margin-top:14px;color:var(--blush);font-size:1.05rem;max-width:34ch}
+.big{font-size:4.5rem;margin-bottom:10px;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}45%{transform:scale(1.12)}}
+.row{display:flex;gap:18px;margin-top:34px;align-items:center;justify-content:center;min-height:64px}
+button{font-family:inherit;font-weight:800;font-size:1.1rem;border:0;cursor:pointer;border-radius:999px;padding:15px 38px;transition:transform .15s, box-shadow .15s}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.yes{background:linear-gradient(135deg,#ff5d8f,#ff8fa9);color:#fff;box-shadow:0 10px 30px #ff5d8f66}
+.yes:hover{transform:scale(1.08)}
+.no{background:var(--cream);color:var(--ink);transition:left .25s cubic-bezier(.3,1.6,.5,1),top .25s cubic-bezier(.3,1.6,.5,1)}
+.ghost{background:transparent;color:var(--cream);border:2px solid var(--blush)}
+ 
+/* juego */
+#game{padding:12px}
+.hud{width:min(94vw,460px);display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:8px;font-size:1.05rem}
+.hud span{background:#ffffff14;padding:6px 14px;border-radius:999px}
+.stage{position:relative;width:min(94vw,460px);height:min(72vh,640px);border-radius:28px;overflow:hidden;
+  background:linear-gradient(180deg,#5a1b52 0%,#2f0f34 100%);box-shadow:0 20px 60px #0008, inset 0 0 0 2px #ffffff18}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:26px;text-align:center;background:#260d2bcc;backdrop-filter:blur(4px)}
+.overlay.off{display:none}
+.overlay h2{font-family:'Fraunces',Georgia,serif;font-size:2rem;line-height:1.15}
+.overlay p{color:var(--blush);max-width:30ch}
+@media (prefers-reduced-motion:reduce){.big{animation:none}}
+</style>
+</head>
+<body>
+ 
+<!-- PANTALLA 1: pregunta -->
+<section class="screen on" id="ask">
+  <div class="big">🥺</div>
+  <h1>¿Me perdonas por responder así?</h1>
+  <p class="sub">Fui un tonto. Dime que sí, porfa.</p>
+  <div class="row" id="row">
+    <button class="yes" id="yes">Sí </button>
+    <button class="no" id="no">No</button>
+  </div>
+</section>
+ 
+<!-- PANTALLA 2: juego -->
+<section class="screen" id="game">
+  <div class="hud"><span id="score">💗 0</span><span id="time">⏱ 40</span><span id="lives"></span></div>
+  <div class="stage">
+    <canvas id="cv"></canvas>
+    <div class="overlay" id="ov">
+      <div class="big">💞</div>
+      <h2>Gracias por perdonarme</h2>
+      <p>Para celebrar: atrapa todos los corazones que puedas. Esquiva los corazones rotos 💔</p>
+      <button class="yes" id="start">Jugar</button>
+    </div>
+  </div>
+</section>
+ 
+<script>
+/* ============ BOTÓN NO QUE ESCAPA ============ */
+const no = document.getElementById('no');
+const frases = ['No','¿Segura?','Piénsalo','Porfa 🥺','Ay no','Casi me atrapas','Dale al Sí 💗'];
+let intentos = 0;
+function huir(e){
+  if(e){ e.preventDefault(); }
+  intentos++;
+  no.textContent = frases[Math.min(intentos, frases.length-1)];
+  no.style.position = 'fixed';
+  const m = 12, w = no.offsetWidth, h = no.offsetHeight;
+  const x = m + Math.random()*(innerWidth  - w - m*2);
+  const y = m + Math.random()*(innerHeight - h - m*2);
+  no.style.left = x + 'px';
+  no.style.top  = y + 'px';
+}
+['pointerenter','touchstart','pointerdown','click'].forEach(ev => no.addEventListener(ev, huir, {passive:false}));
+ 
+/* ============ CAMBIO DE PANTALLA ============ */
+const show = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); };
+document.getElementById('yes').addEventListener('click', () => { show('game'); resize(); drawIdle(); });
+ 
+/* ============ JUEGO: ATRAPA LOS CORAZONES ============ */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const ov = document.getElementById('ov');
+let W=0,H=0,dpr=1;
+function resize(){
+  dpr = Math.min(devicePixelRatio||1, 2);
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W*dpr; cv.height = H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  px = Math.min(Math.max(px||W/2, 50), W-50);
+}
+addEventListener('resize', resize);
+ 
+let px = 0, items = [], pops = [], score = 0, lives = 3, timeLeft = 40, running = false, last = 0, spawnT = 0, clock = 0;
+const COLORS = {good:['#ff5d8f','#ff8fa9','#ffc2d1'], gold:['#ffcf70'], bad:['#6b5b73']};
+ 
+function heart(x,y,s,fill,rot=0,broken=false){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s);
+  ctx.beginPath();
+  ctx.moveTo(0,0.9);
+  ctx.bezierCurveTo(-1.6,-0.1,-1.1,-1.3,0,-0.55);
+  ctx.bezierCurveTo(1.1,-1.3,1.6,-0.1,0,0.9);
+  ctx.closePath();
+  ctx.fillStyle = fill; ctx.shadowColor = broken ? 'transparent' : fill; ctx.shadowBlur = 14; ctx.fill();
+  ctx.shadowBlur = 0;
+  if(broken){
+    ctx.strokeStyle = '#260d2b'; ctx.lineWidth = .12;
+    ctx.beginPath(); ctx.moveTo(0,-.55); ctx.lineTo(-.25,-.15); ctx.lineTo(.2,.2); ctx.lineTo(-.1,.9); ctx.stroke();
+  } else {
+    ctx.fillStyle = '#ffffff66'; ctx.beginPath(); ctx.ellipse(-.55,-.5,.22,.12,-.6,0,7); ctx.fill();
+  }
+  ctx.restore();
+}
+ 
+function basket(x,y){
+  ctx.save(); ctx.translate(x,y);
+  const g = ctx.createLinearGradient(0,-10,0,34); g.addColorStop(0,'#fff1e6'); g.addColorStop(1,'#ffc2d1');
+  ctx.fillStyle = g; ctx.shadowColor = '#ff5d8f'; ctx.shadowBlur = 18;
+  ctx.beginPath(); ctx.moveTo(-50,-8); ctx.lineTo(50,-8); ctx.quadraticCurveTo(44,34,24,34); ctx.lineTo(-24,34); ctx.quadraticCurveTo(-44,34,-50,-8); ctx.fill();
+  ctx.shadowBlur = 0; ctx.strokeStyle = '#ff5d8f55'; ctx.lineWidth = 2;
+  for(let i=-30;i<=30;i+=15){ ctx.beginPath(); ctx.moveTo(i,-4); ctx.lineTo(i*.7,30); ctx.stroke(); }
+  ctx.restore();
+}
+ 
+function bg(t){
+  // estrellitas suaves
+  for(let i=0;i<22;i++){
+    const x = (i*97.3)%W, y = (i*53.7 + t*8*(1+i%3))%H, a = .15 + .15*Math.sin(t*2+i);
+    ctx.fillStyle = `rgba(255,241,230,${a})`; ctx.beginPath(); ctx.arc(x,y,1.4+(i%3)*.5,0,7); ctx.fill();
+  }
+}
+ 
+function drawIdle(){ ctx.clearRect(0,0,W,H); bg(0); basket(W/2,H-60); }
+ 
+function spawn(){
+  const r = Math.random();
+  const type = r < .2 ? 'bad' : r < .3 ? 'gold' : 'good';
+  const col = COLORS[type][Math.floor(Math.random()*COLORS[type].length)];
+  items.push({x:24+Math.random()*(W-48), y:-30, vy:(110+Math.random()*90)*(1+(40-timeLeft)/60), s:12+Math.random()*7, type, col, rot:(Math.random()-.5)*.6, vr:(Math.random()-.5)*1.5});
+}
+ 
+function hud(){
+  document.getElementById('score').textContent = '💗 '+score;
+  document.getElementById('time').textContent = '⏱ '+Math.ceil(timeLeft);
+  document.getElementById('lives').textContent = '❤️'.repeat(lives) + '🖤'.repeat(3-lives);
+}
+ 
+function loop(ts){
+  if(!running) return;
+  const dt = Math.min((ts-last)/1000, .05); last = ts; clock += dt;
+  timeLeft -= dt; spawnT -= dt;
+  if(spawnT <= 0){ spawn(); spawnT = Math.max(.32, .8 - (40-timeLeft)*.012); }
+ 
+  ctx.clearRect(0,0,W,H); bg(clock);
+  const by = H-60;
+  for(let i=items.length-1;i>=0;i--){
+    const it = items[i]; it.y += it.vy*dt; it.rot += it.vr*dt;
+    if(it.y > by-14 && it.y < by+22 && Math.abs(it.x-px) < 50){
+      if(it.type==='bad'){ lives--; pops.push({x:it.x,y:by-20,t:'💔',life:.8}); }
+      else { const p = it.type==='gold'?5:1; score += p; pops.push({x:it.x,y:by-20,t:'+'+p,life:.8}); }
+      items.splice(i,1); hud(); continue;
+    }
+    if(it.y > H+30){ items.splice(i,1); continue; }
+    heart(it.x,it.y,it.s,it.col,it.rot,it.type==='bad');
+  }
+  basket(px,by);
+  for(let i=pops.length-1;i>=0;i--){
+    const p = pops[i]; p.life -= dt; p.y -= 40*dt;
+    ctx.globalAlpha = Math.max(p.life,0); ctx.fillStyle = '#ffcf70'; ctx.font = '800 20px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(p.t,p.x,p.y);
+    ctx.globalAlpha = 1; if(p.life<=0) pops.splice(i,1);
+  }
+  hud();
+  if(lives<=0 || timeLeft<=0) return fin();
+  requestAnimationFrame(loop);
+}
+ 
+
+            
+  ov.innerHTML = `<div class="big">🏆</div><h2>${score} corazones</h2><p>${msg}</p><button class="yes" id="again">Jugar otra vez</button>`;
+  ov.classList.remove('off');
+  document.getElementById('again').onclick = begin;
+}
+ 
+function begin(){
+  items = []; pops = []; score = 0; lives = 3; timeLeft = 40; clock = 0; spawnT = .3;
+  ov.classList.add('off'); resize(); hud(); running = true; last = performance.now();
+  requestAnimationFrame(loop);
+}
+document.getElementById('start').onclick = begin;
+ 
+// controles: dedo / mouse / teclado
+function move(e){ const r = cv.getBoundingClientRect(); px = Math.min(Math.max(e.clientX - r.left, 50), W-50); }
+cv.addEventListener('pointermove', move);
+cv.addEventListener('pointerdown', move);
+addEventListener('keydown', e => {
+  if(e.key==='ArrowLeft')  px = Math.max(px-34, 50);
+  if(e.key==='ArrowRight') px = Math.min(px+34, W-50);
+});
+</script>
+</body>
+</html>
+ 
